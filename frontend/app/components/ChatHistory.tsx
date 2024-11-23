@@ -15,8 +15,8 @@ export default function ChatHistory({ chats, currentChatId, onSelectChat, onStar
     <div className="space-y-2">
       <Button 
         onClick={onStartNewChat}
-        variant="outline" 
-        className="w-full justify-start text-white hover:text-gray-300 hover:bg-gray-700"
+        variant="ghost" 
+        className="w-full justify-start bg-gray-800 text-white hover:text-gray-300 hover:bg-gray-700"
       >
         + New Chat
       </Button>
