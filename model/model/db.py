@@ -46,10 +46,17 @@ class VectorDB:
         documents = []
         for file in os.listdir(path):
             file_path = os.path.join(path, file)
+            
             if not file.endswith(".txt") and not file.endswith("_metadata.txt"):
                 # Convert non-txt files to txt
-                document_content = self.convert_to_text(file_path)
                 txt_file_path = os.path.join(path, f"{os.path.splitext(file)[0]}.txt")
+                
+                # Check if the .txt file already exists
+                if os.path.exists(txt_file_path):
+                    print(f"File {txt_file_path} already exists. Skipping conversion.")
+                    continue
+
+                document_content = self.convert_to_text(file_path)
                 with open(txt_file_path, 'w') as txt_file:
                     txt_file.write(document_content)
                 file = os.path.basename(txt_file_path)
