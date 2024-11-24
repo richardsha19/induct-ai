@@ -11,6 +11,10 @@ from ..utils import (
     get_llm
 )
 
+from ..models import (
+    DeleteRequest
+)
+
 import os
 
 router = APIRouter(
@@ -46,9 +50,9 @@ def create(doc_name: str, file: UploadFile = File(...)) -> Dict[str, str]:
     }
 
 @router.post("/delete")
-def delete(name: str) -> Dict[str, str]:
+def delete(request: DeleteRequest) -> Dict[str, str]:
     return {
-        "message": f"Deleted {name} from Corpus."
+        "message": f"Deleted {request.name} from Corpus."
     }
 
 @router.post("/update")

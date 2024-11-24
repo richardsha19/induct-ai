@@ -12,17 +12,16 @@ interface ChatAreaProps {
 
 export default function ChatArea({ chat, addMessage }: ChatAreaProps) {
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (input.trim()) {
-      addMessage('user', input)
+    if (input.trim() && !isLoading) {
+      setIsLoading(true)
+      await addMessage('user', input.trim())
       setInput('')
-      // Simulate assistant response in the same chat
-      setTimeout(() => {
-        addMessage('assistant', `I understand you're asking about "${input}". How can I help you with that?`)
-      }, 1000)
+      setIsLoading(false)
     }
   }
 
@@ -33,7 +32,7 @@ export default function ChatArea({ chat, addMessage }: ChatAreaProps) {
   return (
     <div className="flex flex-col h-full bg-gray-900">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {chat.messages.length === 0 ? (
+        {chat?.messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             Type a message to start this conversation.
           </div>

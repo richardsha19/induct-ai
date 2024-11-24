@@ -10,6 +10,7 @@ import { Label } from "@/app/components/ui/label"
 import { Textarea } from "@/app/components/ui/textarea"
 import { useRouter } from 'next/navigation'
 import { Upload } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 
 const initialDocuments: Document[] = [
   { id: '1', name: 'Employee Handbook', uploadDate: '2023-06-01', metadata: 'HR, Policies, Onboarding, Company Culture, Benefits, Time Off, Code of Conduct' },
@@ -32,8 +33,29 @@ export default function ManagerPage() {
   const [viewingMetadata, setViewingMetadata] = useState<{ id: string; metadata: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
-  const handleDelete = (id: string) => {
-    setDocuments(documents.filter(doc => doc.id !== id))
+  const handleDelete = async (id: string) => {
+    try {
+      const docToDelete = documents.find(doc => doc.id === id);
+      if (!docToDelete) {
+        throw new Error('Document not found');
+      }
+      const response = await fetch('http://127.0.0.1:8000/manager/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: docToDelete.name }),
+      });
+      if (response.ok) {
+        setDocuments(documents.filter(doc => doc.id !== id));
+        toast.success('Document deleted successfully');
+      } else {
+        throw new Error('Failed to delete document');
+      }
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast.error('Failed to delete document');
+    }
   }
 
   const handleEdit = (document: Document) => {
@@ -48,27 +70,70 @@ export default function ManagerPage() {
     }
   }
 
-  const handleAdd = () => {
-    if (selectedFile && newDocument.metadata) {
-      const newDoc: Document = {
-        id: Date.now().toString(),
-        name: newDocument.name || selectedFile.name,
-        uploadDate: new Date().toISOString().split('T')[0],
-        metadata: newDocument.metadata
-      }
-      setDocuments([...documents, newDoc])
-      setNewDocument({ id: '', name: '', uploadDate: '', metadata: '' })
-      setSelectedFile(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+  const handleAdd = async () => {
+    if (selectedFile) {
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('name', newDocument.name || selectedFile.name);
+        if (newDocument.metadata) {
+          formData.append('metadata', newDocument.metadata);
+        }
+
+        const response = await fetch('http://127.0.0.1:8000/manager/create', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const newDoc: Document = {
+            id: data.id,
+            name: data.name,
+            uploadDate: data.uploadDate,
+            metadata: data.metadata,
+          };
+          setDocuments([...documents, newDoc]);
+          setNewDocument({ id: '', name: '', uploadDate: '', metadata: '' });
+          setSelectedFile(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+          toast.success('Document uploaded successfully');
+        } else {
+          throw new Error('Failed to upload document');
+        }
+      } catch (error) {
+        console.error('Error uploading document:', error);
+        toast.error('Failed to upload document');
       }
     }
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (editingDocument) {
-      setDocuments(documents.map(doc => doc.id === editingDocument.id ? editingDocument : doc))
-      setEditingDocument(null)
+      try {
+        const response = await fetch('http://127.0.0.1:8000/manager/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            document: editingDocument.name,
+            metadata: editingDocument.metadata,
+          }),
+        });
+        if (response.ok) {
+          setDocuments(documents.map(doc => doc.id === editingDocument.id ? editingDocument : doc));
+          setEditingDocument(null);
+          toast.success('Metadata updated successfully');
+        } else {
+          throw new Error('Failed to update metadata');
+        }
+      } catch (error) {
+        console.error('Error updating metadata:', error);
+        toast.error('Failed to update metadata');
+      }
     }
   }
 
@@ -139,6 +204,7 @@ export default function ManagerPage() {
                         onChange={handleFileChange}
                         ref={fileInputRef}
                         className="hidden"
+                        accept=".pdf"
                       />
                       <span className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors">
                         Choose File
@@ -164,7 +230,7 @@ export default function ManagerPage() {
               </div>
               <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="metadata" className="text-right pt-2">
-                  Metadata
+                  Metadata (optional)
                 </Label>
                 <Textarea
                   id="metadata"
@@ -176,7 +242,7 @@ export default function ManagerPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleAdd} disabled={!selectedFile || !newDocument.metadata}>
+              <Button onClick={handleAdd} disabled={!selectedFile}>
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Document
               </Button>

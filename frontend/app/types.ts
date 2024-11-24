@@ -2,6 +2,7 @@ export interface User {
   username: string;
   password: string;
   role: 'user' | 'manager';
+  position: string;
 }
 
 export interface Document {
