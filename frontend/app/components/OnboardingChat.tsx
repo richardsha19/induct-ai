@@ -13,29 +13,39 @@ export interface Chat {
 }
 
 export default function OnboardingChat() {
-  const [chats, setChats] = useState<Chat[]>([])
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null)
+  const [chats, setChats] = useState<Chat[]>([
+    {
+      id: 'default',
+      title: 'New Chat',
+      messages: []
+    }
+  ])
+  const [currentChatId, setCurrentChatId] = useState<string>('default')
 
   const getCurrentChat = () => chats.find(chat => chat.id === currentChatId) || null
+
+  const createChatTitle = (content: string) => {
+    // Limit the title to 30 characters, adding an ellipsis if it's longer
+    return content.length > 30 ? `${content.slice(0, 27)}...` : content;
+  }
 
   const addMessage = (role: 'user' | 'assistant', content: string) => {
     setChats(prevChats => {
       const updatedChats = [...prevChats]
       const currentChatIndex = updatedChats.findIndex(chat => chat.id === currentChatId)
-      
+    
       if (currentChatIndex !== -1) {
+        // Add message to existing chat
         updatedChats[currentChatIndex] = {
           ...updatedChats[currentChatIndex],
-          messages: [...updatedChats[currentChatIndex].messages, { role, content }]
+          messages: [...updatedChats[currentChatIndex].messages, { role, content }],
+          // Update title if this is the first user message and the title is still 'New Chat'
+          title: role === 'user' && updatedChats[currentChatIndex].title === 'New Chat' 
+            ? createChatTitle(content) 
+            : updatedChats[currentChatIndex].title
         }
       } else {
-        const newChat: Chat = {
-          id: Date.now().toString(),
-          title: content.slice(0, 30) + (content.length > 30 ? '...' : ''),
-          messages: [{ role, content }]
-        }
-        updatedChats.push(newChat)
-        setCurrentChatId(newChat.id)
+        console.error('Current chat not found')
       }
 
       return updatedChats
@@ -83,4 +93,3 @@ export default function OnboardingChat() {
     </>
   )
 }
-
