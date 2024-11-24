@@ -26,7 +26,7 @@ router = APIRouter(
 )
 
 @router.post("/create")
-def create(doc_name: str, file: UploadFile = File(...)) -> Dict[str, str]:
+def create(request: CreateRequest, file: UploadFile = File(...)) -> Dict[str, str]:
     documents_folder = "documents"
 
     # Ensure the "documents" folder exists
@@ -49,7 +49,7 @@ def create(doc_name: str, file: UploadFile = File(...)) -> Dict[str, str]:
         file.file.close()
 
     return {
-        "message": f"Successfully uploaded {file.filename}"
+        "message": f"Successfully uploaded {file.filename} with doc_name: {request.doc_name}"
     }
 
 # Request model for the delete endpoint
