@@ -11,6 +11,8 @@ interface ChatHistoryProps {
 }
 
 export default function ChatHistory({ chats, currentChatId, onSelectChat, onStartNewChat, onDeleteChat }: ChatHistoryProps) {
+  const regularChats = chats.filter(chat => !chat.isSpecial);
+
   return (
     <div className="space-y-2">
       <Button 
@@ -21,7 +23,7 @@ export default function ChatHistory({ chats, currentChatId, onSelectChat, onStar
         <Plus className="mr-2 h-4 w-4" />
         New Chat
       </Button>
-      {chats.map((chat) => (
+      {regularChats.map((chat) => (
         <div key={chat.id} className="flex items-center space-x-2 group">
           <Button
             onClick={() => onSelectChat(chat.id)}
