@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter
 
-from backend.api import get_db, get_llm
+from ..utils import get_db, get_llm
 
 router = APIRouter(
     prefix='/manager',
