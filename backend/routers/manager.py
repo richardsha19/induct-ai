@@ -1,7 +1,9 @@
 from typing import Dict
+from datetime import datetime
 from fastapi import (
     APIRouter, 
     File,
+    Form,
     UploadFile, 
     HTTPException
 )
@@ -25,8 +27,8 @@ router = APIRouter(
 )
 
 @router.post("/create")
-def create(request: CreateRequest, file: UploadFile = File(...)) -> Dict[str, str]:
-    documents_folder = "documents"
+async def create(doc_name: str = Form(...), metadata: str = Form(...), file: UploadFile = File(...)) -> Dict[str, str]:
+    documents_folder = "backend/documents"
 
     # Ensure the "documents" folder exists
     if not os.path.exists(documents_folder):
@@ -48,7 +50,10 @@ def create(request: CreateRequest, file: UploadFile = File(...)) -> Dict[str, st
         file.file.close()
 
     return {
-        "message": f"Successfully uploaded {file.filename} with doc_name: {request.doc_name}"
+        "message": f"Successfully uploaded {file.filename} with doc_name: {doc_name}",
+        "name": doc_name,
+        "uploadDate": datetime.today().strftime('%Y-%m-%d'),
+        "metadata": metadata
     }
 
 # Request model for the delete endpoint

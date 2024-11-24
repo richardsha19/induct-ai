@@ -73,33 +73,31 @@ export default function ManagerPage() {
   const handleAdd = async () => {
     if (selectedFile) {
       try {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('name', newDocument.name || selectedFile.name);
-        if (newDocument.metadata) {
-          formData.append('metadata', newDocument.metadata);
-        }
+          const formData = new FormData();
+          formData.append('file', selectedFile);
+          formData.append('doc_name', newDocument.name || selectedFile.name); // Note the change from 'name' to 'doc_name'
+          formData.append('metadata', newDocument.metadata || ''); // Ensure metadata is appended, even if empty
 
-        const response = await fetch('http://127.0.0.1:8000/manager/create', {
-          method: 'POST',
-          body: formData,
-        });
+          const response = await fetch('http://127.0.0.1:8000/manager/create', {
+              method: 'POST',
+              body: formData,
+          });
 
-        if (response.ok) {
-          const data = await response.json();
-          const newDoc: Document = {
-            id: data.id,
-            name: data.name,
-            uploadDate: data.uploadDate,
-            metadata: data.metadata,
-          };
-          setDocuments([...documents, newDoc]);
-          setNewDocument({ id: '', name: '', uploadDate: '', metadata: '' });
-          setSelectedFile(null);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-          }
-          toast.success('Document uploaded successfully');
+          if (response.ok) {
+            const data = await response.json();
+            const newDoc = {
+                id: newDocument.id,
+                name: data.name,
+                uploadDate: data.uploadDate,
+                metadata: data.metadata,
+            };
+            setDocuments([...documents, newDoc]);
+            setNewDocument({ id: '', name: '', uploadDate: '', metadata: '' });
+            setSelectedFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            toast.success('Document uploaded successfully');
         } else {
           throw new Error('Failed to upload document');
         }
@@ -108,7 +106,7 @@ export default function ManagerPage() {
         toast.error('Failed to upload document');
       }
     }
-  }
+  };
 
   const handleUpdate = async () => {
     if (editingDocument) {
@@ -119,8 +117,8 @@ export default function ManagerPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            document: editingDocument.name,
-            metadata: editingDocument.metadata,
+            doc_name: editingDocument.name,
+            new_metadata: editingDocument.metadata,
           }),
         });
         if (response.ok) {
@@ -137,9 +135,12 @@ export default function ManagerPage() {
     }
   }
 
-  const truncateMetadata = (metadata: string, maxLength: number = 30) => {
-    return metadata.length > maxLength ? `${metadata.substring(0, maxLength)}...` : metadata
-  }
+  const truncateMetadata = (metadata: string | null | undefined, maxLength: number = 30): string => {
+    if (!metadata) {
+        return ''; 
+    }
+    return metadata.length > maxLength ? `${metadata.substring(0, maxLength)}...` : metadata;
+}
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
