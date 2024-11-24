@@ -5,6 +5,7 @@ import Sidebar from './Sidebar'
 import ChatArea from './ChatArea'
 import ChatHistory from './ChatHistory'
 import { Message } from '../types'
+import { users } from '../users'
 
 export interface Chat {
   id: string;
@@ -12,6 +13,12 @@ export interface Chat {
   messages: Message[];
   isSpecial?: boolean;
 }
+
+const prompts: Record<string, string> = {
+  'getting-started': 'Help the user get started based on the job position the user is starting. This could include relevant information about the company, Meta, as well as company vision, beliefs, and information about the team.',
+  'company-policies': 'Help the user be more aware of the company policies, rules and company vision in the company.',
+  'meet-the-team': 'Help the user understand the company and team hierarchy, including who they can go for help.',
+};
 
 const defaultChats: { [key: string]: Chat } = {
   'getting-started': {
@@ -52,7 +59,7 @@ const defaultChats: { [key: string]: Chat } = {
   }
 }
 
-export default function OnboardingChat() {
+export default function OnboardingChat({ username }: { username: string }) {
   const [chats, setChats] = useState<Chat[]>([
     {
       id: 'default',
@@ -62,6 +69,9 @@ export default function OnboardingChat() {
     ...Object.values(defaultChats)
   ])
   const [currentChatId, setCurrentChatId] = useState<string>('default')
+
+  const currentUser = users.find(user => user.username === username);
+  const userPosition = currentUser?.position || 'unknown';
 
   useEffect(() => {
     const initializeSpecialChats = async () => {
@@ -75,7 +85,7 @@ export default function OnboardingChat() {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ message: chat.title }),
+              body: JSON.stringify({ message: prompts[chatId], position: userPosition }),
             });
             if (response.ok) {
               const data = await response.json();
@@ -124,7 +134,7 @@ export default function OnboardingChat() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ message: content }),
+          body: JSON.stringify({ message: content, position: userPosition }),
         });
         if (response.ok) {
           const data = await response.json();
@@ -135,7 +145,7 @@ export default function OnboardingChat() {
       } catch (error) {
         console.error('Error sending message:', error);
         // Use default response if there's an error
-        updateChatMessages(currentChatId, 'assistant', "I'm sorry, I'm having trouble connecting to the server. How else can I assist you?");
+        updateChatMessages(currentChatId, 'assistant', "I'm sorry, I'm having trouble answering that question. Please refer to your manager and ask me if you have any further questions!");
       }
     }
   }
