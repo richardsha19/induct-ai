@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
 import ChatArea from './ChatArea'
 import ChatHistory from './ChatHistory'
@@ -63,31 +63,81 @@ export default function OnboardingChat() {
   ])
   const [currentChatId, setCurrentChatId] = useState<string>('default')
 
+  useEffect(() => {
+    const initializeSpecialChats = async () => {
+      const specialChatIds = ['getting-started', 'company-policies', 'meet-the-team'];
+      for (const chatId of specialChatIds) {
+        const chat = chats.find(c => c.id === chatId);
+        if (chat) {
+          try {
+            const response = await fetch('http://127.0.0.1:8000/user/send_messsage', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ message: chat.title }),
+            });
+            if (response.ok) {
+              const data = await response.json();
+              updateChatMessages(chatId, 'assistant', data.message);
+            }
+          } catch (error) {
+            console.error(`Error initializing ${chatId} chat:`, error);
+          }
+        }
+      }
+    };
+
+    initializeSpecialChats();
+  }, []);
+
   const getCurrentChat = () => chats.find(chat => chat.id === currentChatId) || null
 
   const createChatTitle = (content: string) => {
     return content.length > 30 ? `${content.slice(0, 27)}...` : content;
   }
 
-  const addMessage = (role: 'user' | 'assistant', content: string) => {
+  const updateChatMessages = (chatId: string, role: 'user' | 'assistant', content: string) => {
     setChats(prevChats => {
-      const updatedChats = [...prevChats]
-      const currentChatIndex = updatedChats.findIndex(chat => chat.id === currentChatId)
-    
-      if (currentChatIndex !== -1) {
-        updatedChats[currentChatIndex] = {
-          ...updatedChats[currentChatIndex],
-          messages: [...updatedChats[currentChatIndex].messages, { role, content }],
-          title: role === 'user' && updatedChats[currentChatIndex].title === 'New Chat' 
-            ? createChatTitle(content) 
-            : updatedChats[currentChatIndex].title
-        }
-      } else {
-        console.error('Current chat not found')
+      const updatedChats = [...prevChats];
+      const chatIndex = updatedChats.findIndex(chat => chat.id === chatId);
+      if (chatIndex !== -1) {
+        updatedChats[chatIndex] = {
+          ...updatedChats[chatIndex],
+          messages: [...updatedChats[chatIndex].messages, { role, content }],
+          title: role === 'user' && updatedChats[chatIndex].title === 'New Chat'
+            ? createChatTitle(content)
+            : updatedChats[chatIndex].title
+        };
       }
+      return updatedChats;
+    });
+  }
 
-      return updatedChats
-    })
+  const addMessage = async (role: 'user' | 'assistant', content: string) => {
+    updateChatMessages(currentChatId, role, content);
+
+    if (role === 'user') {
+      try {
+        const response = await fetch('http://localhost:8000/send_message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: content }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          updateChatMessages(currentChatId, 'assistant', data.message);
+        } else {
+          throw new Error('Failed to get response from server');
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        // Use default response if there's an error
+        updateChatMessages(currentChatId, 'assistant', "I'm sorry, I'm having trouble connecting to the server. How else can I assist you?");
+      }
+    }
   }
 
   const startNewChat = () => {
@@ -136,3 +186,4 @@ export default function OnboardingChat() {
     </>
   )
 }
+
