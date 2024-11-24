@@ -12,10 +12,12 @@ router = APIRouter(
 
 @router.post("/send_message")
 def send(request: SendMessageRequest) -> Dict[str, str]:
+    message_sent = request.message + f" Please note that this user is currently working this job position: {request.position}."
+
     vector_db = get_db()
     response = vector_db.RAG(
         corpus_path="backend/documents", 
-        prompt=request.message
+        prompt=message_sent
     )
 
     return {

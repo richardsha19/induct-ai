@@ -12,48 +12,42 @@ interface ChatAreaProps {
 }
 
 export default function ChatArea({ chat, addMessage }: ChatAreaProps) {
-  const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (input.trim() && !isLoading) {
-      setIsLoading(true)
-      setInput('')
-      await addMessage('user', input.trim())
-      setIsLoading(false)
+      setIsLoading(true);
+      setInput('');
+      await addMessage('user', input.trim());
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chat?.messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chat?.messages]);
 
   if (!chat) {
-    return <div className="flex-1 p-4 text-center text-gray-500">Select a chat to start messaging</div>
+    return <div className="flex-1 p-4 text-center text-gray-500">Select a chat to start messaging</div>;
   }
 
   return (
     <div className="flex flex-col h-full bg-gray-900">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {chat.messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            Type a message to start this conversation.
-          </div>
+          <div className="text-center text-gray-500 mt-8">Type a message to start this conversation.</div>
         ) : (
           chat.messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
                 className={`max-w-sm rounded-lg p-4 ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-white'
+                  message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-white'
                 }`}
               >
                 {message.role === 'user' ? (
@@ -69,7 +63,7 @@ export default function ChatArea({ chat, addMessage }: ChatAreaProps) {
                       h1: ({ node, ...props }) => <h1 className="text-xl font-bold mb-2" {...props} />,
                       h2: ({ node, ...props }) => <h2 className="text-lg font-bold mb-2" {...props} />,
                       h3: ({ node, ...props }) => <h3 className="text-md font-bold mb-2" {...props} />,
-                      code: ({ node, inline, ...props }) => 
+                      code: ({ node, inline, ...props }) =>
                         inline ? (
                           <code className="bg-gray-800 rounded px-1 py-0.5" {...props} />
                         ) : (
@@ -103,6 +97,5 @@ export default function ChatArea({ chat, addMessage }: ChatAreaProps) {
         </div>
       </form>
     </div>
-  )
+  );
 }
-

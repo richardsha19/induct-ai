@@ -9,3 +9,4 @@ class UpdateRequest(BaseModel):
 
 class SendMessageRequest(BaseModel):
     message: str
+    position: str
