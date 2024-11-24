@@ -1,0 +1,7 @@
+[project]
+name = "model"
+version = "0.1.0"
+description = "Model infrastructure for InductionAI"
+
+[tool.setuptools]
+packages = ["model"]
