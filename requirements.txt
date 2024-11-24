@@ -1,0 +1,12 @@
+langchain_core
+langchain_ollama
+weaviate
+fastapi
+chromadb
+ollama
+PyPDF2
+python-docx
+openpyxl
+pytesseract
+bs4
+pandas
