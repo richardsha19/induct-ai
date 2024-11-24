@@ -5,6 +5,7 @@ from fastapi import (
     UploadFile, 
     HTTPException
 )
+from pydantic import BaseModel
 
 from ..utils import (
     get_db, 
@@ -12,7 +13,9 @@ from ..utils import (
 )
 
 from ..models import (
-    DeleteRequest
+    CreateRequest,
+    DeleteRequest,
+    UpdateRequest
 )
 
 import os
@@ -49,6 +52,7 @@ def create(doc_name: str, file: UploadFile = File(...)) -> Dict[str, str]:
         "message": f"Successfully uploaded {file.filename}"
     }
 
+# Request model for the delete endpoint
 @router.post("/delete")
 def delete(request: DeleteRequest) -> Dict[str, str]:
     return {
@@ -56,8 +60,7 @@ def delete(request: DeleteRequest) -> Dict[str, str]:
     }
 
 @router.post("/update")
-def update(doc_name: str, new_metadata: str) -> Dict[str, str]:
+def update(request: UpdateRequest) -> Dict[str, str]:
     return {
-        "message": f"Edited metadata for document: {doc_name}"
+        "message": f"Edited metadata for document: {request.doc_name}"
     }
-
