@@ -15,7 +15,7 @@ export default function ChatPage() {
   return (
     <main className="flex flex-col h-screen bg-gray-900 text-white">
       <div className="p-4 bg-gray-800 shadow flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Onboarding Chat</h1>
+        <h1 className="text-2xl font-bold">Induct AI</h1>
         <Button onClick={handleLogout} variant="ghost" className="text-white hover:text-gray-300 hover:bg-gray-700">Logout</Button>
       </div>
       <div className="flex-1 flex overflow-hidden">

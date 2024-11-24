@@ -1,22 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Document } from '../types'
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/app/components/ui/dialog"
 import { Label } from "@/app/components/ui/label"
+import { Textarea } from "@/app/components/ui/textarea"
 import { useRouter } from 'next/navigation'
+import { Upload } from 'lucide-react'
 
 const initialDocuments: Document[] = [
-  { id: '1', name: 'Employee Handbook', uploadDate: '2023-06-01', metadata: 'HR, Policies' },
-  { id: '2', name: 'IT Security Guidelines', uploadDate: '2023-05-15', metadata: 'IT, Security' },
-  { id: '3', name: 'Onboarding Checklist', uploadDate: '2023-05-30', metadata: 'HR, Onboarding' },
+  { id: '1', name: 'Employee Handbook', uploadDate: '2023-06-01', metadata: 'HR, Policies, Onboarding, Company Culture, Benefits, Time Off, Code of Conduct' },
+  { id: '2', name: 'IT Security Guidelines', uploadDate: '2023-05-15', metadata: 'IT, Security, Passwords, Data Protection, Network Access, Cybersecurity' },
+  { id: '3', name: 'Onboarding Checklist', uploadDate: '2023-05-30', metadata: 'HR, Onboarding, New Employee, Orientation, Training, Equipment Setup' },
 ]
 
 export default function ManagerPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleLogout = () => {
     // In a real app, you'd clear the session/token here
@@ -26,6 +29,8 @@ export default function ManagerPage() {
   const [documents, setDocuments] = useState<Document[]>(initialDocuments)
   const [newDocument, setNewDocument] = useState<Document>({ id: '', name: '', uploadDate: '', metadata: '' })
   const [editingDocument, setEditingDocument] = useState<Document | null>(null)
+  const [viewingMetadata, setViewingMetadata] = useState<{ id: string; metadata: string } | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const handleDelete = (id: string) => {
     setDocuments(documents.filter(doc => doc.id !== id))
@@ -35,10 +40,28 @@ export default function ManagerPage() {
     setEditingDocument(document)
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setSelectedFile(file)
+      setNewDocument({ ...newDocument, name: file.name })
+    }
+  }
+
   const handleAdd = () => {
-    if (newDocument.name && newDocument.metadata) {
-      setDocuments([...documents, { ...newDocument, id: Date.now().toString(), uploadDate: new Date().toISOString().split('T')[0] }])
+    if (selectedFile && newDocument.metadata) {
+      const newDoc: Document = {
+        id: Date.now().toString(),
+        name: newDocument.name || selectedFile.name,
+        uploadDate: new Date().toISOString().split('T')[0],
+        metadata: newDocument.metadata
+      }
+      setDocuments([...documents, newDoc])
       setNewDocument({ id: '', name: '', uploadDate: '', metadata: '' })
+      setSelectedFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -47,6 +70,10 @@ export default function ManagerPage() {
       setDocuments(documents.map(doc => doc.id === editingDocument.id ? editingDocument : doc))
       setEditingDocument(null)
     }
+  }
+
+  const truncateMetadata = (metadata: string, maxLength: number = 30) => {
+    return metadata.length > maxLength ? `${metadata.substring(0, maxLength)}...` : metadata
   }
 
   return (
@@ -62,7 +89,7 @@ export default function ManagerPage() {
               <TableHead className="text-white">Document Name</TableHead>
               <TableHead className="text-white">Upload Date</TableHead>
               <TableHead className="text-white">Metadata</TableHead>
-              <TableHead className="text-white">Actions</TableHead>
+              <TableHead className="text-white text-left">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -70,10 +97,20 @@ export default function ManagerPage() {
               <TableRow key={doc.id}>
                 <TableCell className="text-white">{doc.name}</TableCell>
                 <TableCell className="text-white">{doc.uploadDate}</TableCell>
-                <TableCell className="text-white">{doc.metadata}</TableCell>
-                <TableCell>
-                  <Button variant="ghost" className="mr-2 text-white hover:text-gray-300 hover:bg-gray-700" onClick={() => handleEdit(doc)}>Edit Metadata</Button>
-                  <Button variant="destructive" onClick={() => handleDelete(doc.id)}>Delete</Button>
+                <TableCell className="text-white max-w-xs">
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto font-normal text-left text-white hover:text-blue-400"
+                    onClick={() => setViewingMetadata({ id: doc.id, metadata: doc.metadata })}
+                  >
+                    {truncateMetadata(doc.metadata)}
+                  </Button>
+                </TableCell>
+                <TableCell className="text-white">
+                  <div className="flex items-center justify-start space-x-4">
+                    <Button variant="ghost" className="text-white hover:text-gray-300 hover:bg-gray-700" onClick={() => handleEdit(doc)}>Edit Metadata</Button>
+                    <Button variant="destructive" onClick={() => handleDelete(doc.id)}>Delete</Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -88,32 +125,61 @@ export default function ManagerPage() {
             <DialogHeader>
               <DialogTitle>Add New Document</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-6 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
+                <Label htmlFor="file-upload" className="text-right">
+                  Upload File
+                </Label>
+                <div className="col-span-3">
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        id="file-upload"
+                        onChange={handleFileChange}
+                        ref={fileInputRef}
+                        className="hidden"
+                      />
+                      <span className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors">
+                        Choose File
+                      </span>
+                    </label>
+                    <span className="text-gray-400">
+                      {selectedFile ? selectedFile.name : 'No file chosen'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="file-name" className="text-right">
+                  File Name
                 </Label>
                 <Input
-                  id="name"
+                  id="file-name"
                   value={newDocument.name}
                   onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
                   className="col-span-3 bg-gray-700 text-white"
+                  placeholder="Enter file name (optional)"
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="metadata" className="text-right">
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="metadata" className="text-right pt-2">
                   Metadata
                 </Label>
-                <Input
+                <Textarea
                   id="metadata"
                   value={newDocument.metadata}
                   onChange={(e) => setNewDocument({ ...newDocument, metadata: e.target.value })}
-                  className="col-span-3 bg-gray-700 text-white"
+                  className="col-span-3 bg-gray-700 text-white min-h-[100px]"
+                  placeholder="Enter metadata (comma-separated)"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleAdd}>Add Document</Button>
+              <Button onClick={handleAdd} disabled={!selectedFile || !newDocument.metadata}>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Document
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -129,16 +195,32 @@ export default function ManagerPage() {
                   <Label htmlFor="edit-metadata" className="text-right">
                     Metadata
                   </Label>
-                  <Input
+                  <Textarea
                     id="edit-metadata"
                     value={editingDocument.metadata}
                     onChange={(e) => setEditingDocument({ ...editingDocument, metadata: e.target.value })}
-                    className="col-span-3 bg-gray-700 text-white"
+                    className="col-span-3 bg-gray-700 text-white min-h-[100px]"
                   />
                 </div>
               </div>
               <DialogFooter>
                 <Button onClick={handleUpdate}>Update Metadata</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {viewingMetadata && (
+          <Dialog open={!!viewingMetadata} onOpenChange={() => setViewingMetadata(null)}>
+            <DialogContent className="bg-gray-800 text-white">
+              <DialogHeader>
+                <DialogTitle>Full Metadata</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="text-sm text-gray-300 whitespace-pre-wrap">{viewingMetadata.metadata}</p>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => setViewingMetadata(null)}>Close</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
