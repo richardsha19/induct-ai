@@ -1,6 +1,6 @@
 import { Button } from "@/app/components/ui/button"
 import { Chat } from './OnboardingChat'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Plus } from 'lucide-react'
 
 interface ChatHistoryProps {
   chats: Chat[];
@@ -15,25 +15,30 @@ export default function ChatHistory({ chats, currentChatId, onSelectChat, onStar
     <div className="space-y-2">
       <Button 
         onClick={onStartNewChat}
-        variant="outline" 
+        variant="ghost" 
         className="w-full justify-start text-white hover:text-gray-300 hover:bg-gray-700"
       >
-        + New Chat
+        <Plus className="mr-2 h-4 w-4" />
+        New Chat
       </Button>
       {chats.map((chat) => (
-        <div key={chat.id} className="flex items-center space-x-2">
+        <div key={chat.id} className="flex items-center space-x-2 group">
           <Button
             onClick={() => onSelectChat(chat.id)}
             variant={chat.id === currentChatId ? "secondary" : "ghost"}
-            className="flex-grow justify-start text-white hover:text-gray-300 hover:bg-gray-700"
+            className={`flex-grow justify-start text-white hover:text-gray-300 hover:bg-gray-700 ${
+              chat.id === currentChatId ? 'bg-gray-700' : ''
+            }`}
           >
-            {chat.title}
+            <span className="text-xs leading-tight truncate w-full text-left">
+              {chat.title}
+            </span>
           </Button>
           <Button
             onClick={() => onDeleteChat(chat.id)}
             variant="ghost"
             size="icon"
-            className="text-gray-400 hover:text-red-500"
+            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 hover:bg-gray-700"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

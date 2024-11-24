@@ -50,98 +50,100 @@ export default function ManagerPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 bg-gray-900 text-white min-h-screen">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Documents Uploaded</h1>
-        <Button onClick={handleLogout} variant="outline">Logout</Button>
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-white">Document Name</TableHead>
-            <TableHead className="text-white">Upload Date</TableHead>
-            <TableHead className="text-white">Metadata</TableHead>
-            <TableHead className="text-white">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {documents.map((doc) => (
-            <TableRow key={doc.id}>
-              <TableCell className="text-white">{doc.name}</TableCell>
-              <TableCell className="text-white">{doc.uploadDate}</TableCell>
-              <TableCell className="text-white">{doc.metadata}</TableCell>
-              <TableCell>
-                <Button variant="outline" className="mr-2" onClick={() => handleEdit(doc)}>Edit Metadata</Button>
-                <Button variant="destructive" onClick={() => handleDelete(doc.id)}>Delete</Button>
-              </TableCell>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="container mx-auto p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Documents Uploaded</h1>
+          <Button onClick={handleLogout} variant="ghost" className="text-white hover:text-gray-300 hover:bg-gray-700">Logout</Button>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-white">Document Name</TableHead>
+              <TableHead className="text-white">Upload Date</TableHead>
+              <TableHead className="text-white">Metadata</TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {documents.map((doc) => (
+              <TableRow key={doc.id}>
+                <TableCell className="text-white">{doc.name}</TableCell>
+                <TableCell className="text-white">{doc.uploadDate}</TableCell>
+                <TableCell className="text-white">{doc.metadata}</TableCell>
+                <TableCell>
+                  <Button variant="ghost" className="mr-2 text-white hover:text-gray-300 hover:bg-gray-700" onClick={() => handleEdit(doc)}>Edit Metadata</Button>
+                  <Button variant="destructive" onClick={() => handleDelete(doc.id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="mt-4">Add Document</Button>
-        </DialogTrigger>
-        <DialogContent className="bg-gray-800 text-white">
-          <DialogHeader>
-            <DialogTitle>Add New Document</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={newDocument.name}
-                onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
-                className="col-span-3 bg-gray-700 text-white"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="metadata" className="text-right">
-                Metadata
-              </Label>
-              <Input
-                id="metadata"
-                value={newDocument.metadata}
-                onChange={(e) => setNewDocument({ ...newDocument, metadata: e.target.value })}
-                className="col-span-3 bg-gray-700 text-white"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleAdd}>Add Document</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {editingDocument && (
-        <Dialog open={!!editingDocument} onOpenChange={() => setEditingDocument(null)}>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="mt-4 bg-gray-800 hover:bg-gray-700 text-white">Add Document</Button>
+          </DialogTrigger>
           <DialogContent className="bg-gray-800 text-white">
             <DialogHeader>
-              <DialogTitle>Edit Document Metadata</DialogTitle>
+              <DialogTitle>Add New Document</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-metadata" className="text-right">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={newDocument.name}
+                  onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
+                  className="col-span-3 bg-gray-700 text-white"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="metadata" className="text-right">
                   Metadata
                 </Label>
                 <Input
-                  id="edit-metadata"
-                  value={editingDocument.metadata}
-                  onChange={(e) => setEditingDocument({ ...editingDocument, metadata: e.target.value })}
+                  id="metadata"
+                  value={newDocument.metadata}
+                  onChange={(e) => setNewDocument({ ...newDocument, metadata: e.target.value })}
                   className="col-span-3 bg-gray-700 text-white"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleUpdate}>Update Metadata</Button>
+              <Button onClick={handleAdd}>Add Document</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      )}
+
+        {editingDocument && (
+          <Dialog open={!!editingDocument} onOpenChange={() => setEditingDocument(null)}>
+            <DialogContent className="bg-gray-800 text-white">
+              <DialogHeader>
+                <DialogTitle>Edit Document Metadata</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-metadata" className="text-right">
+                    Metadata
+                  </Label>
+                  <Input
+                    id="edit-metadata"
+                    value={editingDocument.metadata}
+                    onChange={(e) => setEditingDocument({ ...editingDocument, metadata: e.target.value })}
+                    className="col-span-3 bg-gray-700 text-white"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleUpdate}>Update Metadata</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
     </div>
   )
 }
