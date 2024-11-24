@@ -1,11 +1,10 @@
-from typing import Optional, Dict
+from typing import Dict
 from fastapi import (
     APIRouter, 
     File,
     UploadFile, 
     HTTPException
 )
-from pydantic import BaseModel
 
 from ..utils import (
     get_db, 

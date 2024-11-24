@@ -1,4 +1,7 @@
+from typing import Dict
 from fastapi import APIRouter
+
+from ..models import SendMessageRequest
 
 router = APIRouter(
     prefix='/user',
@@ -6,5 +9,7 @@ router = APIRouter(
 )
 
 @router.post("/send_message")
-def send(msg: str):
-    return f"Sent message {msg}"
+def send(request: SendMessageRequest) -> Dict[str, str]:
+    return {
+        "message": f"Sent message {request.message}"
+    }
