@@ -70,7 +70,7 @@ export default function OnboardingChat() {
         const chat = chats.find(c => c.id === chatId);
         if (chat) {
           try {
-            const response = await fetch('http://127.0.0.1:8000/user/send_messsage', {
+            const response = await fetch('http://127.0.0.1:8000/user/send_message', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ export default function OnboardingChat() {
 
     if (role === 'user') {
       try {
-        const response = await fetch('http://localhost:8000/send_message', {
+        const response = await fetch('http://127.0.0.1:8000/user/send_message', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
