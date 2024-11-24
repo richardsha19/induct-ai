@@ -5,6 +5,7 @@ class DeleteRequest(BaseModel):
 
 class CreateRequest(BaseModel):
     doc_name: str
+    metadata: str
 
 class UpdateRequest(BaseModel):
     doc_name: str
